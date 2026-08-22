@@ -2,6 +2,6 @@ from user import User
 
 my_user = User("Vyacheclav", "Bezgin")
 
-my_user.First()
-my_user.Last()
-my_user.name()
+my_user.print_first_name()
+my_user.print_last_name()
+my_user.print_full_name()
