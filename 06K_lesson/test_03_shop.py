@@ -3,55 +3,88 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-def test_slow_calculator():
-# Запускаем драйвер Chrome и задаём таймаут (50 секунд — с запасом, учитывая задержку на странице)
-    driver = webdriver.Chrome()
-    wait = WebDriverWait(driver, 50)
+def test_sauce_demo_store():
+# Запускаем браузер Firefox
+    driver = webdriver.Firefox()
+    driver.maximize_window()
+    wait = WebDriverWait(driver, 10)  # Увеличили таймаут для надёжности
 
     try:
-# Шаг 1: Открываем страницу
-       print(" Открываю страницу калькулятора...")
-       driver.get("https://bonigarcia.dev/selenium-webdriver-java/slow-calculator.html")
-       driver.maximize_window()
+# Шаг 1: Открываем сайт магазина
+        print(" Открываю сайт магазина...")
+        driver.get("https://www.saucedemo.com/")
+        driver.save_screenshot("store_0.png")
 
-# Шаг 2: Вводим значение 45 в поле delay
-       print(" Устанавливаю задержку 45 секунд...")
-       delay_input = driver.find_element(By.CSS_SELECTOR, "#delay")
-       delay_input.clear()
-       # Если в поле уже есть текст
-       delay_input.send_keys("45")
+# Шаг 2: Авторизуемся как standard_user
+        print("🔹 Авторизуюсь как standard_user...")
+        username_input = wait.until(EC.element_to_be_clickable((By.ID, "user-name")))
+        password_input = driver.find_element(By.ID, "password")
+        login_button = driver.find_element(By.ID, "login-button")
 
-# Шаг 3: Нажимаем кнопки 7 + 8 =
-       print(" Выполняю вычисление: 7 + 8...")
-# Кнопка 7
-       button_7 = driver.find_element(By.XPATH, "//span[text()='7']")
-       button_7.click()
-# Кнопка +
-       button_plus = driver.find_element(By.XPATH, "//span[text()='+']")
-       button_plus.click()
-# Кнопка 8
-       button_8 = driver.find_element(By.XPATH, "//span[text()='8']")
-       button_8.click()
-# Кнопка =
-       button_equals = driver.find_element(By.XPATH, "//span[text()='=']")
-       button_equals.click()
+        username_input.send_keys("standard_user")
+        password_input.send_keys("secret_sauce")
+        login_button.click()
+        driver.save_screenshot("store_1.png")
 
-# Шаг 4: Проверяем результат через 45 секунд
-       print(" Ожидаю результат 15 через 45 секунд...")
-# Используем WebDriverWait с ожиданием, что текст в элементе с классом screen станет равен "15"
-       result_element = wait.until(
-          EC.text_to_be_present_in_element((By.CLASS_NAME, "screen"), "15")
-       )
-# Получаем фактический текст результата для проверки
-       actual_result = driver.find_element(By.CLASS_NAME, "screen").text
+# Ждем, пока загрузится страница с товарами
+        print(" Жду загрузки страницы товаров...")
+        wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "inventory_item")))
 
-# Проверяем с помощью assert
-       assert actual_result == "15", f"Ожидался результат 15, но получили '{actual_result}'"
-       print(" Результат 15 отобразился корректно!")
+# Шаг 3: Добавляем товары в корзину
+        print(" Добавляю товары в корзину...")
 
-    except Exception as e:
-# Если тест упал, делаем скриншот для отладки
-       print(f" Тест не прошёл: {e}")
-       driver.save_screenshot("calc_error.png")
+# Sauce Labs Backpack
+        backpack_button = wait.until(EC.element_to_be_clickable((By.ID, "add-to-cart-sauce-labs-backpack")))
+        backpack_button.click()
+        print(" Sauce Labs Backpack добавлен")
+# Ждем, пока кнопка сменится на "Remove"
+        wait.until(EC.text_to_be_present_in_element((By.ID, "remove-sauce-labs-backpack"), "Remove"))
 
-    driver.quit()
+# Sauce Labs Bolt T-Shirt
+        tshirt_button = wait.until(EC.element_to_be_clickable((By.ID, "add-to-cart-sauce-labs-bolt-t-shirt")))
+        tshirt_button.click()
+        print(" Sauce Labs Bolt T-Shirt добавлен")
+
+# Sauce Labs Onesie
+        onesie_button = wait.until(EC.element_to_be_clickable((By.ID, "add-to-cart-sauce-labs-onesie")))
+        onesie_button.click()
+        print(" Sauce Labs Onesie добавлен")
+
+# Переход в корзину
+        print(" Перехожу в корзину...")
+        cart_button = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "shopping_cart_container")))
+        cart_button.click()
+
+# Шаг 4: Оформляем покупку
+        print(" Оформляю покупку...")
+        checkout_button = wait.until(EC.element_to_be_clickable((By.ID, "checkout")))
+        checkout_button.click()
+
+# Заполняем форму
+        print(" Заполняю форму...")
+        first_name = wait.until(EC.element_to_be_clickable((By.ID, "first-name")))
+        last_name = wait.until(EC.element_to_be_clickable((By.ID, "last-name")))
+        postal_code = wait.until(EC.element_to_be_clickable((By.ID, "postal-code")))
+
+        first_name.send_keys("Вячеслав")
+        last_name.send_keys("Безгин")
+        postal_code.send_keys("672000")
+
+# Нажимаем Continue
+        continue_button = wait.until(EC.element_to_be_clickable((By.ID, "continue")))
+        continue_button.click()
+
+# Читаем итоговую сумму
+        print(" Читаю итоговую сумму...")
+        total_element = wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "summary-total")))
+        total_text = total_element.text
+        print(f"Итоговая сумма на странице: {total_text}")
+
+# Проверяем, что сумма равна 58.29
+        print(" Проверяем сумму...")
+        assert float(total_text.replace('$', '')) == 58.29, f"Ожидалась сумма 58.29, но получена {total_text}"
+
+   
+    finally:
+
+     driver.quit()
